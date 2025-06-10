@@ -36,7 +36,10 @@ def create_app(test_config=None):
         if path.startswith("api") or path.startswith("characters") or path.startswith("systems"):
             # Let API routes be handled by blueprints
             return ("", 404)
-        if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        full_path = os.path.normpath(os.path.join(app.static_folder, path))
+        if not full_path.startswith(app.static_folder):
+            return ("", 404)
+        if path != "" and os.path.exists(full_path):
             return send_from_directory(app.static_folder, path)
         return send_from_directory(app.static_folder, "index.html")
 
