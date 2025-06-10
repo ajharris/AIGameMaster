@@ -45,3 +45,8 @@ coverage.xml
 # Ignore Flask session files
 instance/
 .env
+
+# Heroku and Node build artifacts
+node_modules/
+build/
+dist/
