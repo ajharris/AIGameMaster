@@ -33,4 +33,5 @@ if __name__ == "__main__":
     app = create_app()
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    FLASK_ENV = os.getenv("FLASK_ENV", "production")
+    app.run(debug=(FLASK_ENV == "development"))
