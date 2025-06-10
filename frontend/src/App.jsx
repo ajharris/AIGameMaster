@@ -1,5 +1,10 @@
+
 import { useState } from 'react';
 import './App.css';
+import ChatPanel from './components/ChatPanel';
+import DicePanel from './components/DicePanel';
+import CharacterSheet from './components/CharacterSheet';
+import GameButtons from './components/GameButtons';
 
 function App() {
   // Chat state
@@ -86,60 +91,22 @@ function App() {
     <div className="app-container">
       <header>
         <h1>AI Game Master</h1>
-        <div className="game-buttons">
-          <button onClick={handleNewGame}>New Game</button>
-          <button onClick={handleResumeGame} disabled={!sessionId}>Resume Game</button>
-        </div>
+        <GameButtons onNewGame={handleNewGame} onResumeGame={handleResumeGame} sessionId={sessionId} />
       </header>
       <main className="main-layout">
-        <section className="chat-panel" data-testid="chat-panel">
-          <h2>Chat</h2>
-          <div className="chat-messages" data-testid="chat-messages">
-            {messages.map((msg, i) => (
-              <div key={i} className={`msg msg-${msg.sender}`}>
-                <b>{msg.sender === "user" ? "You" : msg.sender === "ai" ? "AI" : "System"}:</b> {msg.text}
-              </div>
-            ))}
-          </div>
-          <form onSubmit={handleChatSubmit} className="chat-form">
-            <input
-              type="text"
-              value={chatInput}
-              onChange={e => setChatInput(e.target.value)}
-              placeholder="Type your message..."
-            />
-            <button type="submit">Send</button>
-          </form>
-        </section>
-        <section className="dice-panel" data-testid="dice-panel">
-          <h2>Dice Roller</h2>
-          <form onSubmit={handleDiceRoll} className="dice-form">
-            <input
-              type="text"
-              value={diceInput}
-              onChange={e => setDiceInput(e.target.value)}
-              placeholder="e.g. 2d6"
-              data-testid="dice-input"
-            />
-            <button type="submit">Roll</button>
-          </form>
-          {diceResult && <div className="dice-result" data-testid="dice-result">{diceResult}</div>}
-        </section>
-        <section className="character-panel" data-testid="character-sheet">
-          <h2>Character Sheet</h2>
-          <div><b>Name:</b> {character.name}</div>
-          <div><b>System:</b> {character.rpg_system}</div>
-          <div><b>Attributes:</b>
-            <ul>
-              {Object.entries(character.data.attributes).map(([k, v]) => (
-                <li key={k}>{k}: {v}</li>
-              ))}
-            </ul>
-          </div>
-          <div><b>Skills:</b> {character.data.skills.join(", ")}</div>
-          <div><b>Powers:</b> {character.data.powers.join(", ")}</div>
-          <div><b>Background:</b> {character.data.background}</div>
-        </section>
+        <ChatPanel
+          messages={messages}
+          chatInput={chatInput}
+          setChatInput={setChatInput}
+          onSubmit={handleChatSubmit}
+        />
+        <DicePanel
+          diceInput={diceInput}
+          setDiceInput={setDiceInput}
+          onRoll={handleDiceRoll}
+          diceResult={diceResult}
+        />
+        <CharacterSheet character={character} />
       </main>
     </div>
   );
