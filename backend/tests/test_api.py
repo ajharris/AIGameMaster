@@ -42,7 +42,8 @@ def test_api_blueprint_registration(app):
 
 def test_app_factory_isolation():
     from flask import Flask
-    from backend.app import app as main_app
+    from backend.app import create_app
+    main_app = create_app()
     test_app = Flask(__name__)
     assert test_app != main_app
     # Test that routes can be registered
