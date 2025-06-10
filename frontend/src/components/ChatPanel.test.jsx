@@ -25,9 +25,16 @@ describe('ChatPanel', () => {
       { sender: 'system', text: 'System message' },
     ];
     render(<ChatPanel {...baseProps} messages={messages} />);
-    expect(screen.getByText('You: Hi')).toBeInTheDocument();
-    expect(screen.getByText('AI: Hello')).toBeInTheDocument();
-    expect(screen.getByText('System: System message')).toBeInTheDocument();
+    // Find the message containers by class
+    const userMsg = screen.getByText('Hi').closest('.msg-user');
+    const aiMsg = screen.getByText('Hello').closest('.msg-ai');
+    const sysMsg = screen.getByText('System message').closest('.msg-system');
+    expect(userMsg).toHaveTextContent('You');
+    expect(userMsg).toHaveTextContent('Hi');
+    expect(aiMsg).toHaveTextContent('AI');
+    expect(aiMsg).toHaveTextContent('Hello');
+    expect(sysMsg).toHaveTextContent('System');
+    expect(sysMsg).toHaveTextContent('System message');
   });
 
   it('calls setChatInput on input change', () => {
