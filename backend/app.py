@@ -14,11 +14,13 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 # Importing routes from separate modules
-from routes.characters import characters_bp
-from routes.systems import systems_bp
+from backend.routes.characters import characters_bp
+from backend.routes.systems import systems_bp
+from backend.routes.api import api_bp
 
 app.register_blueprint(characters_bp, url_prefix="/characters")
 app.register_blueprint(systems_bp, url_prefix="/systems")
+app.register_blueprint(api_bp, url_prefix="/api")
 
 if __name__ == "__main__":
     with app.app_context():
