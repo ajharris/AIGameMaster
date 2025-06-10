@@ -1,4 +1,5 @@
 import json
+import pytest
 
 def test_start_session(client):
     response = client.post('/api/start_session')

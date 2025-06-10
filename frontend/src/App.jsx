@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import './App.css';
 import ChatPanel from './components/ChatPanel';
@@ -16,7 +15,7 @@ function App() {
   const [diceResult, setDiceResult] = useState(null);
 
   // Character sheet state (simple example)
-  const [character, setCharacter] = useState({
+  const [character] = useState({
     name: "Hero",
     rpg_system: "D&D 5e",
     data: {
@@ -62,7 +61,7 @@ function App() {
       } else {
         setDiceResult(data.error || "Error");
       }
-    } catch (err) {
+    } catch {
       setDiceResult("Network error");
     }
   };
