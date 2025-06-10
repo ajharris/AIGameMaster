@@ -6,7 +6,7 @@ import os
 db = SQLAlchemy()
 
 def create_app(test_config=None):
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder="../frontend/dist", static_url_path="/")
     CORS(app)
 
     if test_config is not None:
@@ -26,6 +26,19 @@ def create_app(test_config=None):
     app.register_blueprint(characters_bp, url_prefix="/characters")
     app.register_blueprint(systems_bp, url_prefix="/systems")
     app.register_blueprint(api_bp, url_prefix="/api")
+
+    # Serve React frontend
+    from flask import send_from_directory
+
+    @app.route("/", defaults={"path": ""})
+    @app.route("/<path:path>")
+    def serve_react(path):
+        if path.startswith("api") or path.startswith("characters") or path.startswith("systems"):
+            # Let API routes be handled by blueprints
+            return ("", 404)
+        if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+            return send_from_directory(app.static_folder, path)
+        return send_from_directory(app.static_folder, "index.html")
 
     return app
 
