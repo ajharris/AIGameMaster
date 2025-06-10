@@ -2,10 +2,25 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
+import subprocess
 
 db = SQLAlchemy()
 
+# Ensure the frontend is built before starting in production (Heroku)
+def build_frontend_if_needed():
+    if os.environ.get("FLASK_ENV") == "production":
+        dist_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../frontend/dist"))
+        index_html = os.path.join(dist_path, "index.html")
+        if not os.path.exists(dist_path) or not os.path.exists(index_html):
+            frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../frontend"))
+            try:
+                subprocess.run(["npm", "install"], cwd=frontend_dir, check=True)
+                subprocess.run(["npm", "run", "build"], cwd=frontend_dir, check=True)
+            except Exception as e:
+                print(f"[ERROR] Could not build frontend: {e}")
+
 def create_app(test_config=None):
+    build_frontend_if_needed()
     app = Flask(__name__, static_folder="../frontend/dist", static_url_path="/")
     CORS(app)
 

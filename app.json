@@ -1,0 +1,4 @@
+build:
+  languages:
+    python: python-3.12.1
+    nodejs: 20.x
