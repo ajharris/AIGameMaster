@@ -38,6 +38,32 @@ ai_game_master/
 
 ---
 
+## **Backend Functionality**
+- **Flask API** for all game master features
+- **API Endpoints:**
+  - `/roll` – Dice rolling (supports standard dice notation)
+  - `/narrate` – AI-powered narration and responses
+  - `/upload_rulebook` – Upload custom rulebooks (PDF)
+  - `/upload_sound` – Upload sound effects/music (MP3/WAV)
+  - `/next_turn` – Advance to the next player's turn
+- **Models:**
+  - **Game Master:** Handles turn order, campaigns, and scenarios
+  - **Utilities:** Dice rolling, rule enforcement, narration
+  - **Sound Manager:** Handles sound uploads and retrieval
+- **Uploads:** Stores user-uploaded rulebooks and sound files
+- **Database:** Uses SQLAlchemy for campaign, character, and session management
+
+## **Frontend Functionality**
+- **Modern UI** (Vite + React)
+- **Chat Panel:** Interact with the AI GM
+- **Dice Panel:** Roll dice with UI controls
+- **Character Sheet:** View and manage character info
+- **Game Buttons:** Start new game, resume game, etc.
+- **Live Updates:** UI reflects game state and turn order
+- **Test Coverage:** Frontend and backend tests included
+
+---
+
 ## **🖥️ Installation & Setup**
 ### **1️⃣ Clone the Repository**
 ```bash
