@@ -29,6 +29,16 @@ function App() {
   // Game session state
   const [sessionId, setSessionId] = useState(null);
 
+  // TTS state
+  const [ttsEnabled, setTtsEnabled] = useState(false);
+
+  // TTS playback for AI messages
+  const speak = (text) => {
+    if (!ttsEnabled || typeof window === 'undefined' || !window.speechSynthesis) return;
+    const utter = new window.SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(utter);
+  };
+
   // Chat submit handler
   const handleChatSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +46,9 @@ function App() {
     setMessages((msgs) => [...msgs, { sender: "user", text: chatInput }]);
     // Simulate AI response (replace with API call)
     setTimeout(() => {
-      setMessages((msgs) => [...msgs, { sender: "ai", text: `AI says: ${chatInput}` }]);
+      const aiText = `AI says: ${chatInput}`;
+      setMessages((msgs) => [...msgs, { sender: "ai", text: aiText }]);
+      speak(aiText);
     }, 500);
     setChatInput("");
   };
@@ -91,6 +103,9 @@ function App() {
       <header>
         <h1>AI Game Master</h1>
         <GameButtons onNewGame={handleNewGame} onResumeGame={handleResumeGame} sessionId={sessionId} />
+        <button onClick={() => setTtsEnabled((v) => !v)} data-testid="tts-toggle">
+          {ttsEnabled ? 'Disable TTS' : 'Enable TTS'}
+        </button>
       </header>
       <main className="main-layout">
         <ChatPanel
