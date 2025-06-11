@@ -10,10 +10,6 @@ from unittest.mock import patch
 # It assumes you will implement endpoints like /upload_rulebook and parsing utilities.
 # Adjust import paths and endpoint names as needed for your actual implementation.
 
-@pytest.fixture
-def client(app):
-    return app.test_client()
-
 SUPPORTED_TYPES = [
     (b"%PDF-1.4\n...", "test.pdf", "application/pdf"),
     (b"PK\x03\x04...docx...", "test.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),

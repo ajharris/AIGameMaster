@@ -4,14 +4,7 @@ import shutil
 import pytest
 from backend.app import create_app
 
-@pytest.fixture
-def client():
-    app = create_app({
-        'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
-        'SQLALCHEMY_TRACK_MODIFICATIONS': False,
-        'STATIC_FOLDER': None  # We'll override this in the test
-    })
+def client(app):
     app.static_folder = tempfile.mkdtemp()
     with open(os.path.join(app.static_folder, 'index.html'), 'w') as f:
         f.write('<html><body>Landing Page</body></html>')
