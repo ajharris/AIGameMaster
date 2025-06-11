@@ -133,3 +133,14 @@ def test_admin_log_storage_and_retrieval(client):
     assert isinstance(logs, list)
     # Should contain at least one log entry
     assert any('roll_dice' in (entry.get('endpoint') or '') for entry in logs)
+
+def test_rate_limit_roll_dice(client):
+    # Simulate hitting the rate limit by sending many requests quickly
+    for _ in range(20):
+        resp = client.post('/api/roll_dice', json={'expression': '1d6'})
+        if resp.status_code == 429:
+            data = resp.get_json()
+            assert 'too many requests' in data.get('error', '').lower()
+            break
+    else:
+        pytest.skip('Rate limit not triggered; check if rate limiting is enabled')

@@ -1,7 +1,10 @@
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask import Blueprint, request, jsonify, current_app
 import uuid
 import random
 import threading
+from backend.app import limiter
 
 api_bp = Blueprint('api', __name__)
 
@@ -57,6 +60,7 @@ def continue_session():
         return jsonify({'error': 'Invalid session ID'}), 404
 
 @api_bp.route('/roll_dice', methods=['POST'])
+@limiter.limit("5 per minute")
 def roll_dice():
     with _kill_switch_lock:
         if _kill_switch['enabled']:

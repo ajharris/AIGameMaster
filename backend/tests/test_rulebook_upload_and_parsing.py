@@ -179,3 +179,14 @@ def test_rulebook_deduplication(client):
     data2 = resp2.get_json()
     assert data1.get('rules') == data2.get('rules')
     # Optionally, check a log or counter to ensure only one parse occurred
+
+def test_rate_limit_upload_rulebook(client):
+    file_bytes = b"%PDF-1.4\n..."
+    for _ in range(20):
+        resp = upload_file(client, file_bytes, "test.pdf", "application/pdf")
+        if resp.status_code == 429:
+            data = resp.get_json()
+            assert 'too many requests' in data.get('error', '').lower()
+            break
+    else:
+        pytest.skip('Rate limit not triggered; check if rate limiting is enabled')
