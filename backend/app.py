@@ -1,10 +1,18 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask_migrate import Migrate, upgrade
 import os
 import subprocess
+import sys
+import logging
 
 db = SQLAlchemy()
+migrate = Migrate()
+
+# Ensure 'backend' is in sys.path for all entrypoints
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Ensure the frontend is built before starting in production (Heroku)
 def build_frontend_if_needed():
@@ -32,15 +40,26 @@ def create_app(test_config=None):
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
+    migrate.init_app(app, db)
+
+    # Automatically run migrations in non-production environments
+    if os.environ.get("FLASK_ENV") != "production":
+        with app.app_context():
+            try:
+                upgrade(directory=os.path.abspath(os.path.join(os.path.dirname(__file__), '../migrations')))
+            except Exception as e:
+                print(f"[ERROR] Could not auto-upgrade database: {e}")
 
     # Importing routes from separate modules
     from backend.routes.characters import characters_bp
     from backend.routes.systems import systems_bp
     from backend.routes.api import api_bp
+    from backend.routes.upload_rulebook import upload_rulebook_bp
 
     app.register_blueprint(characters_bp, url_prefix="/characters")
     app.register_blueprint(systems_bp, url_prefix="/systems")
     app.register_blueprint(api_bp, url_prefix="/api")
+    app.register_blueprint(upload_rulebook_bp)
 
     # Serve React frontend
     from flask import send_from_directory
@@ -61,6 +80,7 @@ def create_app(test_config=None):
     return app
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.ERROR)
     app = create_app()
     with app.app_context():
         db.create_all()
