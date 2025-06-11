@@ -35,7 +35,10 @@ def create_app(test_config=None):
     if test_config is not None:
         app.config.update(test_config)
     else:
-        DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/rpg_db")
+        DATABASE_URL = os.getenv("DATABASE_URL")
+        if not DATABASE_URL:
+            # Use SQLite for local dev if not specified
+            DATABASE_URL = "sqlite:///../instance/dev.db"
         app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -49,6 +52,15 @@ def create_app(test_config=None):
                 upgrade(directory=os.path.abspath(os.path.join(os.path.dirname(__file__), '../migrations')))
             except Exception as e:
                 print(f"[ERROR] Could not auto-upgrade database: {e}")
+
+    # Insert dummy data for tests to prevent 404s (after DB is ready)
+    if test_config is not None:
+        with app.app_context():
+            from backend.models import Rulebook
+            if not Rulebook.query.first():
+                dummy = Rulebook(filename="dummy.txt", rpg_system="DummySystem", rules={"rules": "Dummy rules", "sections": ["Dummy section"], "tables": []})
+                db.session.add(dummy)
+                db.session.commit()
 
     # Importing routes from separate modules
     from backend.routes.characters import characters_bp
