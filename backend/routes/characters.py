@@ -1,5 +1,8 @@
 from flask import Blueprint, request, jsonify
-from backend.app import db
+try:
+    from backend.app import db
+except ImportError:
+    from app import db
 from backend.models import Character
 import uuid
 
