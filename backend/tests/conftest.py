@@ -12,7 +12,7 @@ from alembic.config import Config
 from alembic import command
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def app():
     # Create a temp file-based SQLite DB for Alembic compatibility
     db_dir = tempfile.mkdtemp()
@@ -23,8 +23,14 @@ def app():
         "SQLALCHEMY_TRACK_MODIFICATIONS": False,
         "TESTING": True
     })
-    # Import all models to ensure they are registered with SQLAlchemy
+    # Run Alembic migrations to create all tables
     with app.app_context():
+        alembic_cfg = Config(os.path.join(os.path.dirname(__file__), '../../migrations/alembic.ini'))
+        alembic_cfg.set_main_option('sqlalchemy.url', db_uri)
+        # Set script_location explicitly for Alembic
+        migrations_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../migrations'))
+        alembic_cfg.set_main_option('script_location', migrations_path)
+        command.upgrade(alembic_cfg, 'head')
         yield app
     shutil.rmtree(db_dir)
 

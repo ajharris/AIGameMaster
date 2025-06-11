@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 import os
 import tempfile
 from werkzeug.utils import secure_filename
@@ -8,6 +8,7 @@ except ImportError:
     from models import Rulebook, db
 import logging
 import sys
+from backend.app import limiter
 
 upload_rulebook_bp = Blueprint('upload_rulebook', __name__)
 
@@ -31,6 +32,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @upload_rulebook_bp.route('/upload_rulebook', methods=['POST'])
+@limiter.limit("3 per minute")
 def upload_rulebook():
     from backend.utils import parse_pdf, parse_docx  # Import here for patching to work in tests
     if 'file' not in request.files:

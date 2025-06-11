@@ -1,7 +1,9 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate, upgrade
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import os
 import subprocess
 import sys
@@ -9,6 +11,9 @@ import logging
 
 db = SQLAlchemy()
 migrate = Migrate()
+
+# Limiter instance for use in routes
+limiter = Limiter(get_remote_address, default_limits=["100 per hour"])
 
 # Ensure 'backend' is in sys.path for all entrypoints
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -32,6 +37,12 @@ def create_app(test_config=None):
     app = Flask(__name__, static_folder="../frontend/dist", static_url_path="/")
     CORS(app)
 
+    limiter.init_app(app)
+
+    @app.errorhandler(429)
+    def ratelimit_handler(e):
+        return (jsonify(error="Too many requests, slow down!"), 429)
+
     if test_config is not None:
         app.config.update(test_config)
     else:
@@ -44,28 +55,21 @@ def create_app(test_config=None):
 
     db.init_app(app)
     migrate.init_app(app, db)
-
-    # For tests: create all tables in the test DB
+    # For tests: create all tables in the test DB (handled by Alembic in conftest.py)
     if test_config is not None:
+        # Do not call db.create_all() or check for Rulebook in test mode
+        pass
+    else:
+        # Only insert dummy data in non-test mode and inside app context, if table exists
         with app.app_context():
-            db.create_all()
-
-    # Automatically run migrations in non-production environments
-    if os.environ.get("FLASK_ENV") != "production" and test_config is None:
-        with app.app_context():
-            try:
-                upgrade(directory=os.path.abspath(os.path.join(os.path.dirname(__file__), '../migrations')))
-            except Exception as e:
-                print(f"[ERROR] Could not auto-upgrade database: {e}")
-
-    # Insert dummy data for tests to prevent 404s (after DB is ready)
-    if test_config is not None:
-        with app.app_context():
-            from backend.models import Rulebook
-            if not Rulebook.query.first():
-                dummy = Rulebook(filename="dummy.txt", rpg_system="DummySystem", rules={"rules": "Dummy rules", "sections": ["Dummy section"], "tables": []})
-                db.session.add(dummy)
-                db.session.commit()
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            if 'rulebook' in inspector.get_table_names():
+                from backend.models import Rulebook
+                if not Rulebook.query.first():
+                    dummy = Rulebook(filename="dummy.txt", rpg_system="DummySystem", rules={"rules": "Dummy rules", "sections": ["Dummy section"], "tables": []})
+                    db.session.add(dummy)
+                    db.session.commit()
 
     # Importing routes from separate modules
     from backend.routes.characters import characters_bp
@@ -100,7 +104,6 @@ def create_app(test_config=None):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.ERROR)
     app = create_app()
-    with app.app_context():
-        db.create_all()
+    # Do not call db.create_all() here; use migrations for schema management
     FLASK_ENV = os.getenv("FLASK_ENV", "production")
     app.run(debug=(FLASK_ENV == "development"))
