@@ -15,3 +15,14 @@ class Rulebook(db.Model):
     rpg_system = db.Column(db.String(100), nullable=True)
     rules = db.Column(db.JSON, nullable=False)
     # Optionally: store upload timestamp, uploader, etc.
+
+class Universe(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    owner_id = db.Column(db.String(36), nullable=False)
+
+class UserUniverseShare(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    universe_id = db.Column(db.Integer, db.ForeignKey('universe.id'), nullable=False)
+    user_id = db.Column(db.String(36), nullable=False)
+    # Optionally: permissions, timestamps, etc.
