@@ -1,5 +1,5 @@
 ### **AI Game Master**
-🚀 **A Modular Flask API for AI-powered RPG Game Mastering** 🎲  
+🚀 **A Modular Flask API & React Frontend for AI-powered RPG Game Mastering** 🎲  
 
 This project provides an **AI-powered Game Master** for tabletop RPGs. It supports **rule enforcement, narration, dice rolling, campaign management, player turns, sound effects, and more**. Users can upload **custom RPG rulebooks, scenarios, and sound effects** for a fully immersive experience.
 
@@ -7,21 +7,35 @@ This project provides an **AI-powered Game Master** for tabletop RPGs. It suppor
 
 ## **📂 Project Structure**
 ```
-ai_game_master/
-│── app/
-│   │── __init__.py       # Flask app initialization
-│   │── routes.py         # API routes
-│   │── config.py         # Configuration settings
-│── models/
-│   │── __init__.py       # Module initialization
-│   │── game_master.py    # Handles turn order, campaigns, scenarios
-│   │── utilities.py      # Dice rolling, rule enforcement, narration
-│   │── sound_manager.py  # Handles sound uploads and retrieval
-│── uploads/              # Directory for sound and rulebook uploads
-│── run.py                # Entry point to run the Flask app
-│── requirements.txt      # Dependencies
-│── .gitignore            # Files to exclude from Git
-│── README.md             # Documentation
+backend/
+│   app.py                # Flask app entry point
+│   engine.py             # Core game logic and AI integration
+│   gpt4_utils.py         # GPT-4 API helpers
+│   models.py             # SQLAlchemy models
+│   universe.py           # Universe/campaign logic
+│   utils.py              # Dice, narration, rule enforcement
+│   utils_embedding.py    # Embedding and search utilities
+│
+│── config/
+│   config.py             # Configuration settings
+│
+│── routes/
+│   api.py                # Main API endpoints
+│   characters.py         # Character management endpoints
+│   systems.py            # RPG system/rulebook endpoints
+│   upload_rulebook.py    # Rulebook upload & parsing
+│
+│── tests/                # Backend test suite
+frontend/
+│   src/                  # React source code
+│   public/               # Static assets
+│   ...                   # Vite, config, and test files
+instance/
+│   dev.db                # SQLite database (dev)
+migrations/               # Alembic DB migrations
+requirements.txt          # Python dependencies
+run_all_tests.sh          # Run all backend tests
+README.md                 # Documentation
 ```
 
 ---
@@ -35,23 +49,28 @@ ai_game_master/
 ✅ **Custom Rulebooks** – Upload PDFs to extract game mechanics  
 ✅ **Sound Effects & Music** – Upload, generate, and share audio  
 ✅ **Speech-to-Text Support** – Interact with the AI GM using voice commands  
+✅ **Modern Web UI** – React + Vite frontend for interactive play  
+✅ **Test Coverage** – Backend and frontend tests included
 
 ---
 
 ## **Backend Functionality**
 - **Flask API** for all game master features
 - **API Endpoints:**
-  - `/roll` – Dice rolling (supports standard dice notation)
-  - `/narrate` – AI-powered narration and responses
-  - `/upload_rulebook` – Upload custom rulebooks (PDF)
-  - `/upload_sound` – Upload sound effects/music (MP3/WAV)
-  - `/next_turn` – Advance to the next player's turn
+  - `/api/roll` – Dice rolling (standard dice notation)
+  - `/api/narrate` – AI-powered narration and responses
+  - `/api/upload_rulebook` – Upload custom rulebooks (PDF)
+  - `/api/upload_sound` – Upload sound effects/music (MP3/WAV)
+  - `/api/next_turn` – Advance to the next player's turn
+  - `/api/characters` – Character management
+  - `/api/systems` – RPG system/rulebook management
 - **Models:**
-  - **Game Master:** Handles turn order, campaigns, and scenarios
+  - **Game Master/Universe:** Handles turn order, campaigns, and scenarios
   - **Utilities:** Dice rolling, rule enforcement, narration
   - **Sound Manager:** Handles sound uploads and retrieval
 - **Uploads:** Stores user-uploaded rulebooks and sound files
 - **Database:** Uses SQLAlchemy for campaign, character, and session management
+- **Testing:** Pytest-based suite in `backend/tests/`
 
 ## **Frontend Functionality**
 - **Modern UI** (Vite + React)
@@ -60,7 +79,7 @@ ai_game_master/
 - **Character Sheet:** View and manage character info
 - **Game Buttons:** Start new game, resume game, etc.
 - **Live Updates:** UI reflects game state and turn order
-- **Test Coverage:** Frontend and backend tests included
+- **Test Coverage:** Frontend tests included
 
 ---
 
@@ -71,30 +90,35 @@ git clone https://github.com/your-repo/ai-game-master.git
 cd ai-game-master
 ```
 
-### **2️⃣ Create a Virtual Environment (Optional but Recommended)**
+### **2️⃣ Backend Setup**
 ```bash
+cd backend
 python -m venv venv
 source venv/bin/activate  # macOS/Linux
-venv\Scripts\activate   # Windows
+venv\Scripts\activate    # Windows
+pip install -r ../requirements.txt
 ```
 
-### **3️⃣ Install Dependencies**
+### **3️⃣ Run the Flask API**
 ```bash
-pip install -r requirements.txt
-```
-
-### **4️⃣ Run the Flask API**
-```bash
-python run.py
+python app.py
 ```
 Your API will start at `http://127.0.0.1:5000`.
+
+### **4️⃣ Frontend Setup (Optional)**
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+The frontend will start at `http://localhost:5173` (default Vite port).
 
 ---
 
 ## **📡 API Endpoints**
 ### 🎲 **Dice Rolling**
 ```http
-POST /roll
+POST /api/roll
 ```
 **Request Body:**
 ```json
@@ -109,7 +133,7 @@ POST /roll
 
 ### 🗣️ **Narration & AI Game Master**
 ```http
-POST /narrate
+POST /api/narrate
 ```
 **Request Body:**
 ```json
@@ -124,7 +148,7 @@ POST /narrate
 
 ### 📜 **Upload a Custom Rulebook (PDF)**
 ```http
-POST /upload_rulebook
+POST /api/upload_rulebook
 ```
 **Request Body:**  
 Upload a **PDF file** containing RPG rules.  
@@ -138,7 +162,7 @@ Upload a **PDF file** containing RPG rules.
 
 ### 🎵 **Upload Sound Effects & Music**
 ```http
-POST /upload_sound
+POST /api/upload_sound
 ```
 **Request Body:**  
 Upload an **MP3/WAV** file.
@@ -152,7 +176,7 @@ Upload an **MP3/WAV** file.
 
 ### 🔄 **Next Player's Turn**
 ```http
-POST /next_turn
+POST /api/next_turn
 ```
 **Response:**
 ```json
@@ -162,10 +186,11 @@ POST /next_turn
 ---
 
 ## **📝 TODO / Future Improvements**
-- [ ] Web-based interface for interactive play  
 - [ ] Discord bot integration  
 - [ ] More RPG system support  
 - [ ] AI-generated dynamic encounters  
+- [ ] Enhanced web-based interface  
+- [ ] Cloud deployment scripts  
 
 ---
 
