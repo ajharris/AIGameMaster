@@ -14,6 +14,7 @@ class Rulebook(db.Model):
     filename = db.Column(db.String(255), nullable=False, unique=True)
     rpg_system = db.Column(db.String(100), nullable=True)
     rules = db.Column(db.JSON, nullable=False)
+    universe_id = db.Column(db.Integer, db.ForeignKey('universe.id'), nullable=True)  # Link to Universe
     # Optionally: store upload timestamp, uploader, etc.
 
 class Universe(db.Model):
