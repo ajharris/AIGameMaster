@@ -1,5 +1,6 @@
 import json
 import pytest
+from backend.app import create_app
 
 def test_start_session(client):
     response = client.post('/api/start_session')
@@ -94,3 +95,41 @@ def test_app_factory_isolation():
     client = test_app.test_client()
     resp = client.get('/test')
     assert resp.status_code == 200
+
+def test_kill_switch_route(client):
+    # Should return the current state (default: False)
+    resp = client.get('/api/kill_switch')
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert 'enabled' in data
+    # Should allow toggling
+    resp2 = client.post('/api/kill_switch', json={'enabled': True})
+    assert resp2.status_code == 200
+    data2 = resp2.get_json()
+    assert data2['enabled'] is True
+    # Should reflect new state
+    resp3 = client.get('/api/kill_switch')
+    assert resp3.get_json()['enabled'] is True
+
+
+def test_generation_blocked_when_kill_switch_enabled(client):
+    # Enable kill switch
+    client.post('/api/kill_switch', json={'enabled': True})
+    # Try to roll dice (should be blocked)
+    resp = client.post('/api/roll_dice', json={'expression': '1d6'})
+    assert resp.status_code == 403
+    assert 'disabled' in resp.get_json().get('error', '')
+
+
+def test_admin_log_storage_and_retrieval(client):
+    # Clear logs
+    client.post('/api/admin_logs', json={'clear': True})
+    # Simulate input/output
+    client.post('/api/roll_dice', json={'expression': '1d6'})
+    # Retrieve logs
+    resp = client.get('/api/admin_logs')
+    assert resp.status_code == 200
+    logs = resp.get_json().get('logs', [])
+    assert isinstance(logs, list)
+    # Should contain at least one log entry
+    assert any('roll_dice' in (entry.get('endpoint') or '') for entry in logs)
