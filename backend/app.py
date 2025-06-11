@@ -92,10 +92,10 @@ def create_app(test_config=None):
         if path.startswith("api") or path.startswith("characters") or path.startswith("systems"):
             return ("", 404)
         # Try to serve the static file if it exists
-        full_path = os.path.normpath(os.path.join(app.static_folder, path))
-        # Only allow serving files within the static folder
-        if os.path.isfile(full_path) and os.path.commonpath([full_path, app.static_folder]) == app.static_folder:
-            return send_from_directory(app.static_folder, path)
+        full_path = os.path.realpath(os.path.join(app.static_folder, path))
+        # Only allow serving files strictly within the static folder
+        if os.path.isfile(full_path) and os.path.commonpath([full_path, os.path.realpath(app.static_folder)]) == os.path.realpath(app.static_folder):
+            return send_from_directory(app.static_folder, os.path.relpath(full_path, app.static_folder))
         # Fallback: always serve index.html for SPA
         return send_from_directory(app.static_folder, "index.html")
 
