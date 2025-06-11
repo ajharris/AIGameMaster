@@ -79,14 +79,15 @@ def create_app(test_config=None):
     @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")
     def serve_react(path):
+        # Only block API/blueprint routes
         if path.startswith("api") or path.startswith("characters") or path.startswith("systems"):
-            # Let API routes be handled by blueprints
             return ("", 404)
+        # Try to serve the static file if it exists
         full_path = os.path.normpath(os.path.join(app.static_folder, path))
-        if not full_path.startswith(app.static_folder):
-            return ("", 404)
-        if path != "" and os.path.exists(full_path):
+        # Only allow serving files within the static folder
+        if os.path.isfile(full_path) and os.path.commonpath([full_path, app.static_folder]) == app.static_folder:
             return send_from_directory(app.static_folder, path)
+        # Fallback: always serve index.html for SPA
         return send_from_directory(app.static_folder, "index.html")
 
     return app
