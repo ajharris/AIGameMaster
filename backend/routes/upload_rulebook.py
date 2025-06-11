@@ -117,4 +117,4 @@ def upload_rulebook():
             logging.error('File is empty')
         if 'encrypted' in msg or 'locked' in msg:
             return jsonify({'error': 'PDF is encrypted or locked'}), 400
-        return jsonify({'error': str(e)}), 400
+        return jsonify({'error': 'An internal error has occurred'}), 500
