@@ -34,6 +34,46 @@ def test_roll_dice_invalid(client):
     response = client.post('/api/roll_dice', json={'expression': 'badinput'})
     assert response.status_code in (400, 422)
 
+def test_roll_dice_single_die(client):
+    response = client.post('/api/roll_dice', json={'expression': '1d20'})
+    assert response.status_code == 200
+    data = response.get_json()
+    assert 'rolls' in data and 'total' in data
+    assert isinstance(data['rolls'], list)
+    assert len(data['rolls']) == 1
+    assert 1 <= data['rolls'][0] <= 20
+    assert data['total'] == data['rolls'][0]
+
+def test_roll_dice_multiple_dice(client):
+    response = client.post('/api/roll_dice', json={'expression': '3d6'})
+    assert response.status_code == 200
+    data = response.get_json()
+    assert 'rolls' in data and 'total' in data
+    assert len(data['rolls']) == 3
+    for roll in data['rolls']:
+        assert 1 <= roll <= 6
+    assert data['total'] == sum(data['rolls'])
+
+def test_roll_dice_invalid_input(client):
+    response = client.post('/api/roll_dice', json={'expression': 'badinput'})
+    assert response.status_code == 400
+    data = response.get_json()
+    assert 'error' in data
+
+def test_roll_dice_zero_dice(client):
+    response = client.post('/api/roll_dice', json={'expression': '0d6'})
+    assert response.status_code == 400
+    data = response.get_json()
+    assert 'error' in data
+
+def test_roll_dice_100d1(client):
+    response = client.post('/api/roll_dice', json={'expression': '100d1'})
+    assert response.status_code == 200
+    data = response.get_json()
+    assert len(data['rolls']) == 100
+    assert all(roll == 1 for roll in data['rolls'])
+    assert data['total'] == 100
+
 def test_api_blueprint_registration(app):
     # Ensure /api/ endpoints are registered
     rules = [rule.rule for rule in app.url_map.iter_rules()]
