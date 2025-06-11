@@ -45,8 +45,13 @@ def create_app(test_config=None):
     db.init_app(app)
     migrate.init_app(app, db)
 
+    # For tests: create all tables in the test DB
+    if test_config is not None:
+        with app.app_context():
+            db.create_all()
+
     # Automatically run migrations in non-production environments
-    if os.environ.get("FLASK_ENV") != "production":
+    if os.environ.get("FLASK_ENV") != "production" and test_config is None:
         with app.app_context():
             try:
                 upgrade(directory=os.path.abspath(os.path.join(os.path.dirname(__file__), '../migrations')))

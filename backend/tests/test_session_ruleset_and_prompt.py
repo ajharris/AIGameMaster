@@ -1,23 +1,6 @@
 import pytest
 from backend.models import Rulebook
-from backend.app import create_app, db
-
-@pytest.fixture(scope="session")
-def app():
-    app = create_app({
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-        "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-        "TESTING": True
-    })
-    with app.app_context():
-        db.create_all()
-        yield app
-        db.session.remove()
-        db.drop_all()
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
+from backend.app import db
 
 def test_switching_rpg_system_updates_ruleset(app):
     with app.app_context():

@@ -3,28 +3,11 @@ import uuid
 import pytest
 from backend.utils_embedding import chunk_text, embed_texts, SimpleVectorStore
 from backend.models import Rulebook, Universe, UserUniverseShare
-from backend.app import create_app, db
+from backend.app import db
 
 # Use the correct path to the PDF in the project root
 env_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 PDF_PATH = os.path.join(env_root, "Erick Wujcik - Ninjas and Superspies-Palladium Books (1994).pdf")
-
-@pytest.fixture(scope="session")
-def app():
-    app = create_app({
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-        "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-        "TESTING": True
-    })
-    with app.app_context():
-        db.create_all()
-        yield app
-        db.session.remove()
-        db.drop_all()
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
 
 # 🧪 Test: PDF Parsing and Chunking
 def test_pdf_parsing_and_chunking():

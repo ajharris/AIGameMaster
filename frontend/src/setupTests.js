@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { vi } from 'vitest';
+import '@testing-library/jest-dom';
 
 // Provide a default mock for axios in all tests
 beforeAll(() => {

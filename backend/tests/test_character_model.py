@@ -1,25 +1,7 @@
 import pytest
 import uuid
 from backend.models import Character
-from backend.app import create_app, db
-
-@pytest.fixture(scope="session")
-def app():
-    app = create_app({
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-        "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-        "TESTING": True
-    })
-    with app.app_context():
-        yield app
-
-@pytest.fixture(autouse=True)
-def setup_and_teardown(app):
-    with app.app_context():
-        db.create_all()
-        yield
-        db.session.remove()
-        db.drop_all()
+from backend.app import db
 
 def test_create_character_with_required_fields(app):
     with app.app_context():
